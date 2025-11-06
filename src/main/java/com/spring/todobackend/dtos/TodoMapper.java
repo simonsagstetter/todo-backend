@@ -10,11 +10,11 @@ public class TodoMapper {
     public TodoMapper() {
     }
 
-    public Todo toTodo( String id, long version, TodoWithoutIdDTO todoWithoutIdDTO ) {
+    public Todo toTodo( String id, long version, TodoDTO todoDTO ) {
         return Todo.builder()
                 .id( id )
-                .description( todoWithoutIdDTO.description() )
-                .status( todoWithoutIdDTO.status() )
+                .description( todoDTO.description() )
+                .status( todoDTO.status() )
                 .currentVersion( version )
                 .build();
     }

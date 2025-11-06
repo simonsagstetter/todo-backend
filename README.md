@@ -7,8 +7,6 @@
 ![Version](https://img.shields.io/badge/version-0.0.1-lightgrey)
 ![Server](https://img.shields.io/badge/server-localhost:8080-lightgrey)
 
-*Tested with JDK Version 21 - Amazon Corretto*
-
 Todo-Backend is a REST API written in Java and Spring Boot Web.
 
 ## Features
