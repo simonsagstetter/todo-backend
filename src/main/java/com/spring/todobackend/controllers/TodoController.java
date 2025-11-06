@@ -84,7 +84,7 @@ public class TodoController {
         }
     }
 
-    @DeleteMapping(path = "/{id}", consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    @DeleteMapping(path = "/{id}", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Todo delete( @PathVariable String id ) {
         try {

@@ -83,22 +83,13 @@ public class TodoService {
     @Transactional
     public Todo deleteTodo( String id ) throws TodoNotFoundException, TodoHistoryNotFoundException {
         Todo todoToDelete = this.getTodo( id );
-        List<String> todoHistoryIds = this.todoHistoryRepository.findAllByTodoId( id )
+        this.todoHistoryRepository.findAllByTodoId( id )
                 .orElseThrow( () -> new TodoHistoryNotFoundException( id ) )
                 .stream()
                 .map( TodoHistory::id )
-                .toList();
+                .forEach( todoHistoryRepository::deleteById );
 
-        this.todoHistoryRepository.deleteAllById( todoHistoryIds );
         this.todoRepository.deleteById( todoToDelete.id() );
-
-        boolean stillExists =
-                this.todoRepository.findById( todoToDelete.id() ).isPresent() ||
-                        this.todoHistoryRepository.findAllByTodoId( todoToDelete.id() ).isPresent();
-
-        if ( stillExists ) {
-            throw new IllegalStateException( "Delete failed: Todo or history still exists for id=" + id );
-        }
 
         return todoToDelete;
     }

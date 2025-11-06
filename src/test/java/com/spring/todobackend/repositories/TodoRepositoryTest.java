@@ -49,7 +49,7 @@ class TodoRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void findAll_ShouldReturnTodoInList_WhenCalled( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -120,7 +120,7 @@ class TodoRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void findById_ShouldNotThrow_WhenCalled( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -154,7 +154,7 @@ class TodoRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void insert_ShouldReturnTodo_WhenCalled( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -184,7 +184,7 @@ class TodoRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void save_ShouldReturnTodo_WhenCalled( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -222,7 +222,7 @@ class TodoRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void delete_ShouldReturnNever_WhenCalled( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
