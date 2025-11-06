@@ -1,6 +1,6 @@
 package com.spring.todobackend.controllers;
 
-import com.spring.todobackend.dtos.TodoWithoutIdDTO;
+import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
 import com.spring.todobackend.exceptions.TodoNotFoundException;
 import com.spring.todobackend.models.Todo;
@@ -46,15 +46,15 @@ public class TodoController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public Todo create( @RequestBody TodoWithoutIdDTO todoWithoutIdDTO ) {
-        return this.todoService.createTodo( todoWithoutIdDTO );
+    public Todo create( @RequestBody TodoDTO todoDTO ) {
+        return this.todoService.createTodo( todoDTO );
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Todo update( @PathVariable String id, @RequestBody TodoWithoutIdDTO todoWithoutIdDTO ) {
+    public Todo update( @PathVariable String id, @RequestBody TodoDTO todoDTO ) {
         try {
-            return this.todoService.updateTodo( id, todoWithoutIdDTO );
+            return this.todoService.updateTodo( id, todoDTO );
         } catch ( TodoNotFoundException e ) {
             throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
         }

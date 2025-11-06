@@ -1,7 +1,7 @@
 package com.spring.todobackend.services;
 
 import com.spring.todobackend.dtos.TodoMapper;
-import com.spring.todobackend.dtos.TodoWithoutIdDTO;
+import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
 import com.spring.todobackend.exceptions.TodoNotFoundException;
 import com.spring.todobackend.models.Todo;
@@ -11,11 +11,7 @@ import com.spring.todobackend.repositories.TodoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TodoService {
@@ -49,7 +45,7 @@ public class TodoService {
     }
 
     // CREATE SERVICES
-    public Todo createTodo( TodoWithoutIdDTO todo ) {
+    public Todo createTodo( TodoDTO todo ) {
         String todoId = idService.generateIdFor( Todo.class.getSimpleName() );
         String todoHistoryId = idService.generateIdFor( TodoHistory.class.getSimpleName() );
 
@@ -61,7 +57,7 @@ public class TodoService {
     }
 
     // UPDATE SERVICES
-    public Todo updateTodo( String id, TodoWithoutIdDTO todo ) throws TodoNotFoundException {
+    public Todo updateTodo( String id, TodoDTO todo ) throws TodoNotFoundException {
         Todo oldTodo = this.getTodo( id );
         String todoHistoryId = idService.generateIdFor( TodoHistory.class.getSimpleName() );
 
