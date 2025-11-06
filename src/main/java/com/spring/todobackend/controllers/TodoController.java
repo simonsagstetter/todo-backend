@@ -47,7 +47,11 @@ public class TodoController {
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public Todo create( @RequestBody TodoDTO todoDTO ) {
-        return this.todoService.createTodo( todoDTO );
+        try {
+            return this.todoService.createTodo( todoDTO );
+        } catch ( TodoNotFoundException | TodoHistoryNotFoundException e ) {
+            throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
+        }
     }
 
     @PutMapping("/{id}")
@@ -55,7 +59,7 @@ public class TodoController {
     public Todo update( @PathVariable String id, @RequestBody TodoDTO todoDTO ) {
         try {
             return this.todoService.updateTodo( id, todoDTO );
-        } catch ( TodoNotFoundException e ) {
+        } catch ( TodoNotFoundException | TodoHistoryNotFoundException e ) {
             throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
         }
     }
@@ -81,10 +85,10 @@ public class TodoController {
     }
 
     @DeleteMapping(path = "/{id}", consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete( @PathVariable String id ) {
+    @ResponseStatus(HttpStatus.OK)
+    public Todo delete( @PathVariable String id ) {
         try {
-            this.todoService.deleteTodo( id );
+            return this.todoService.deleteTodo( id );
         } catch ( TodoNotFoundException | TodoHistoryNotFoundException e ) {
             throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
         }

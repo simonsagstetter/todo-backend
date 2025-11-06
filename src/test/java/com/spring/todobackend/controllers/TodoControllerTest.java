@@ -36,7 +36,7 @@ class TodoControllerTest {
     private static final String fixedTodoId = "TODO-TEST-ID";
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void getAll_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -62,7 +62,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void get_ShouldReturn404_WhenCalled( String description, String status, String currentVersion ) throws Exception {
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo/" + fixedTodoId )
@@ -73,7 +73,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void get_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -99,7 +99,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void create_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -126,7 +126,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void update_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -160,7 +160,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void delete_ShouldNotThrow_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -171,10 +171,14 @@ class TodoControllerTest {
 
         Todo todo = todoService.createTodo( newTodo );
 
+        String jsonContent = new ObjectMapper().writeValueAsString( todo );
+
         mockMvc.perform( MockMvcRequestBuilders
                         .delete( "/api/todo/" + todo.id() )
                 )
-                .andExpect( MockMvcResultMatchers.status().isNoContent() );
+                .andExpect( MockMvcResultMatchers.status().isOk() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo/" + todo.id() )
@@ -183,7 +187,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
     void undo_redo_ShouldReturnTodoFromHistory_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
