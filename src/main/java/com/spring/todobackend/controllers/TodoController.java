@@ -27,13 +27,13 @@ public class TodoController {
     @Autowired
     private TodoService todoService;
 
-    @GetMapping(path = "", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "", consumes = MediaType.ALL_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Todo> getAll() {
         return this.todoService.getAllTodos();
     }
 
-    @GetMapping(path = "/{id}", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{id}", consumes = MediaType.ALL_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Todo get( @PathVariable String id ) {
         try {
@@ -43,13 +43,13 @@ public class TodoController {
         }
     }
 
-    @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public Todo create( @RequestBody TodoWithoutIdDTO todoWithoutIdDTO ) {
         return this.todoService.createTodo( todoWithoutIdDTO );
     }
 
-    @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Todo update( @PathVariable String id, @RequestBody TodoWithoutIdDTO todoWithoutIdDTO ) {
         try {
