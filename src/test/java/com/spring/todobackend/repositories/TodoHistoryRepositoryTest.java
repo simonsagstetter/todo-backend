@@ -57,7 +57,7 @@ class TodoHistoryRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void findAllByTodoId_ShouldNotThrow( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -94,7 +94,7 @@ class TodoHistoryRepositoryTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void deleteAll_ShouldNotThrow( String description, String status, String currentVersion ) {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );

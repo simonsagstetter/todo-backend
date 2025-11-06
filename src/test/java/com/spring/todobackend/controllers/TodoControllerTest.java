@@ -171,10 +171,14 @@ class TodoControllerTest {
 
         Todo todo = todoService.createTodo( newTodo );
 
+        String jsonContent = new ObjectMapper().writeValueAsString( todo );
+
         mockMvc.perform( MockMvcRequestBuilders
                         .delete( "/api/todo/" + todo.id() )
                 )
-                .andExpect( MockMvcResultMatchers.status().isNoContent() );
+                .andExpect( MockMvcResultMatchers.status().isOk() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo/" + todo.id() )
