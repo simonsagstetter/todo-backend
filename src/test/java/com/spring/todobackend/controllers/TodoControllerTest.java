@@ -36,7 +36,7 @@ class TodoControllerTest {
     private static final String fixedTodoId = "TODO-TEST-ID";
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void getAll_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -62,7 +62,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void get_ShouldReturn404_WhenCalled( String description, String status, String currentVersion ) throws Exception {
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo/" + fixedTodoId )
@@ -73,7 +73,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void get_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -99,7 +99,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void create_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -126,7 +126,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void update_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -160,7 +160,7 @@ class TodoControllerTest {
     }
 
     @ParameterizedTest
-    @CsvFileSource(files = "src/test/resources/todo.csv", delimiter = ',', numLinesToSkip = 1)
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
     void delete_ShouldNotThrow_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
@@ -180,6 +180,51 @@ class TodoControllerTest {
                         .get( "/api/todo/" + todo.id() )
                 )
                 .andExpect( MockMvcResultMatchers.status().isNotFound() );
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    void undo_redo_ShouldReturnTodoFromHistory_WhenCalled( String description, String status ) throws Exception {
+        //GIVEN
+        TodoStatus todoStatus = TodoStatus.valueOf( status );
+        TodoDTO newTodo = TodoDTO.builder()
+                .description( description )
+                .status( todoStatus )
+                .build();
+
+        Todo todo = todoService.createTodo( newTodo );
+
+        TodoDTO todoToUpdate = TodoDTO.builder()
+                .description( "updated" )
+                .status( TodoStatus.IN_PROGRESS )
+                .build();
+
+        Todo updatedTodo = todoService.updateTodo( todo.id(), todoToUpdate );
+
+        String jsonContentPrev = new ObjectMapper().writeValueAsString( todo );
+        String jsonContentNext = new ObjectMapper().writeValueAsString( updatedTodo );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .post( "/api/todo/" + todo.id() + "/undo" )
+                )
+                .andExpect( MockMvcResultMatchers.status().isOk() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContentPrev ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.id" ).value( todo.id() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( todo.description() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( todo.status().toString() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.currentVersion" ).value( todo.currentVersion() ) );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .post( "/api/todo/" + todo.id() + "/redo" )
+                )
+                .andExpect( MockMvcResultMatchers.status().isOk() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContentNext ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.id" ).value( updatedTodo.id() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( updatedTodo.description() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( updatedTodo.status().toString() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.currentVersion" ).value( updatedTodo.currentVersion() ) );
     }
 
 }
