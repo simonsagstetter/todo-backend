@@ -1,11 +1,45 @@
 # Todo-Backend
 
-![Version](https://img.shields.io/badge/version-0.0.1-green)
-![Server](https://img.shields.io/badge/server-localhost:8080-darkgrey)
+![Java](https://img.shields.io/badge/jdk-21-red?logo=openjdk)
+![Distribution](https://img.shields.io/badge/distribution-coretto-red?logo=openjdk)
+![Distribution](https://img.shields.io/badge/spring%20boot-3.5.7-greeen?logo=springboot)
+[![CI](https://github.com/simonsagstetter/todo-backend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/simonsagstetter/todo-backend/actions/workflows/ci.yml)
+![Version](https://img.shields.io/badge/version-0.0.1-lightgrey)
+![Server](https://img.shields.io/badge/server-localhost:8080-lightgrey)
+
+*Tested with JDK Version 21 - Amazon Corretto*
 
 Todo-Backend is a REST API written in Java and Spring Boot Web.
 
-## Base URL
+## Features
+
+### Swagger-UI
+
+Browse through the Todo API using an integrated Swagger UI:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+### Java Melody
+
+Monitor the performance of your application with Java Melody:
+
+```
+http://localhost:8080/monitoring
+```
+
+### React Frontend
+
+Test your API with a basic react todo-app:
+
+```
+http://localhost:8080
+```
+
+# API Documentation
+
+## 🔗 Base URL
 
 ```
 http://localhost:8080
