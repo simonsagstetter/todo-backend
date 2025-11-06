@@ -1,6 +1,7 @@
 package com.spring.todobackend.controllers;
 
 import com.spring.todobackend.dtos.TodoWithoutIdDTO;
+import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
 import com.spring.todobackend.exceptions.TodoNotFoundException;
 import com.spring.todobackend.models.Todo;
 import com.spring.todobackend.services.TodoService;
@@ -59,12 +60,32 @@ public class TodoController {
         }
     }
 
+    @PostMapping(path = "/{id}/undo", consumes = MediaType.ALL_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Todo undo( @PathVariable String id ) {
+        try {
+            return this.todoService.undo( id );
+        } catch ( TodoNotFoundException | TodoHistoryNotFoundException e ) {
+            throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
+        }
+    }
+
+    @PostMapping(path = "/{id}/redo", consumes = MediaType.ALL_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Todo redo( @PathVariable String id ) {
+        try {
+            return this.todoService.redo( id );
+        } catch ( TodoNotFoundException | TodoHistoryNotFoundException e ) {
+            throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
+        }
+    }
+
     @DeleteMapping(path = "/{id}", consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete( @PathVariable String id ) {
         try {
             this.todoService.deleteTodo( id );
-        } catch ( TodoNotFoundException e ) {
+        } catch ( TodoNotFoundException | TodoHistoryNotFoundException e ) {
             throw new ResponseStatusException( HttpStatus.NOT_FOUND, e.getMessage(), e );
         }
     }

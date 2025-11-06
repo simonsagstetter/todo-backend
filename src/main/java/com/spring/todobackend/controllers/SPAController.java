@@ -10,4 +10,5 @@ public class SPAController {
     public String forward() {
         return "forward:/index.html";
     }
+
 }

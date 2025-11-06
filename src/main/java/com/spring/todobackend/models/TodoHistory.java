@@ -7,6 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @With
 @Builder
-@Document("todos")
-public record Todo( @Id String id, String description, TodoStatus status, long currentVersion ) {
+@Document("todos_history")
+public record TodoHistory( @Id String id, String todoId, String description, TodoStatus status, Long version ) {
 }
