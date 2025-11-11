@@ -34,15 +34,13 @@ public class ChatGPTService {
 
     private String createPrompt( String inputString ) {
         return new StringBuilder()
-                .append( "Please check the following words or sentences with the {{  }} placeholder for misspelling or grammar errors and return a correct version of the words or sentences as single string: " )
+                .append( "Please check the following string within the double open and closed curley brackets for misspelling or grammar errors: " )
                 .append( "{{ " )
                 .append( inputString )
-                .append( " }}" )
-                .append( "The words or sentences can be any language and does not have to be english. Be aware of that. " )
-                .append( "Your answer should only contain the corrected words or sentences as single string and nothing else. " )
-                .append( "The answer format must be JSON. Here is an example: " )
-                .append( "{ \"answer\": \"<correct>\" }" )
-                .append( "<correct> is a placeholder for you answer. If you are not sure then return the words or sentences without changes in the placeholder." ).toString();
+                .append( "}}. " )
+                .append( "If you think the spelling or grammar is wrong, create a correct version the string otherwise use the original string. " )
+                .append( "Finally put the string - corrected or original - into the answer property value of the following JSON and return the JSON in your response. " )
+                .append( "{ \"answer\": \"string\" }" ).toString();
     }
 
     public Optional<GrammarResponse> checkGrammar( String inputString ) {
@@ -51,17 +49,12 @@ public class ChatGPTService {
                 .input( this.createPrompt( inputString ) )
                 .build();
 
-        RestClient.ResponseSpec spec = restClient
+        OpenAIModelResponse response = restClient
                 .post()
                 .body( request )
-                .retrieve();
+                .retrieve().body( OpenAIModelResponse.class );
 
-        OpenAIModelResponse response = spec.body( OpenAIModelResponse.class );
-
-        System.out.println( response );
-
-
-        if ( response != null && response.status() == OpenAIStatus.completed && response.output() != null ) {
+        if ( response != null && response.isValid() ) {
             try {
                 return Optional.of( ( GrammarResponse ) this.objectMapper.readValue( response.getContent().text(), GrammarResponse.class ) );
             } catch ( JsonProcessingException e ) {

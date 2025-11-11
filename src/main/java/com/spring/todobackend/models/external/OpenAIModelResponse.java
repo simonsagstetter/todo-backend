@@ -7,8 +7,8 @@ public record OpenAIModelResponse(
         List<OpenAIOutput> output
 ) {
 
-    public boolean isCompleted() {
-        return this.status.equals( OpenAIStatus.completed );
+    public boolean isValid() {
+        return this.status() == OpenAIStatus.completed && this.output() != null && !this.output().isEmpty();
     }
 
     public OpenAIContent getContent() {
