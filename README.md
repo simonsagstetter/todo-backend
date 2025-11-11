@@ -3,6 +3,7 @@
 ![Java](https://img.shields.io/badge/jdk-21-red?logo=openjdk)
 ![Distribution](https://img.shields.io/badge/distribution-coretto-red?logo=openjdk)
 ![Distribution](https://img.shields.io/badge/spring%20boot-3.5.7-greeen?logo=springboot)
+![Coverage](https://img.shields.io/badge/coverage-97%25-greeen)
 [![CI](https://github.com/simonsagstetter/todo-backend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/simonsagstetter/todo-backend/actions/workflows/ci.yml)
 ![Version](https://img.shields.io/badge/version-0.0.1-lightgrey)
 ![Server](https://img.shields.io/badge/server-localhost:8080-lightgrey)
@@ -852,4 +853,4 @@ todoWorkflow();
 - All endpoints use `application/json` for request and response
 - The API supports versioning through the `currentVersion` field
 - Undo/Redo functionality enables change history per todo
-- DELETE returns no body (204 No Content)
+- Create todo will check for grammar and spelling via AI
