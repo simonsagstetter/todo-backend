@@ -2,7 +2,6 @@ package com.spring.todobackend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.todobackend.dtos.TodoDTO;
-import com.spring.todobackend.dtos.TodoMapper;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
 import com.spring.todobackend.models.ErrorResponse;
 import com.spring.todobackend.models.Todo;
@@ -11,22 +10,27 @@ import com.spring.todobackend.services.TodoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureMockRestServiceServer;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.web.client.ExpectedCount;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.match.MockRestRequestMatchers;
+import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureMockRestServiceServer
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TodoControllerTest {
 
@@ -34,12 +38,13 @@ class TodoControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private TodoService todoService;
+    private MockRestServiceServer mockRestServiceServer;
 
     @Autowired
-    private TodoMapper todoMapper;
+    private TodoService todoService;
 
     private static final String fixedTodoId = "TODO-TEST-ID";
+
 
     @Test
     void global_ShouldReturn404_WhenCalledOnNotExistingResource() throws Exception {
@@ -58,8 +63,6 @@ class TodoControllerTest {
                 .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( errorResponse.getStatus().name() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.message" ).value( errorResponse.getMessage() ) );
-
-
     }
 
     @ParameterizedTest
@@ -72,7 +75,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status( HttpStatus.METHOD_NOT_ALLOWED )
@@ -88,8 +91,6 @@ class TodoControllerTest {
                 .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( errorResponse.getStatus().name() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.message" ).value( errorResponse.getMessage() ) );
-
-
     }
 
     @ParameterizedTest
@@ -102,7 +103,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         String jsonContent = new ObjectMapper().writeValueAsString( List.of( todo ) );
 
@@ -114,8 +115,6 @@ class TodoControllerTest {
                 .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$[0].id" ).isNotEmpty() )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$[0].currentVersion" ).value( 1L ) );
-
-
     }
 
     @ParameterizedTest
@@ -139,7 +138,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         String jsonContent = new ObjectMapper().writeValueAsString( todo );
 
@@ -167,6 +166,26 @@ class TodoControllerTest {
 
         String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
 
+        mockRestServiceServer.expect( ExpectedCount.once(), MockRestRequestMatchers.requestTo( "https://api.openai.com/v1/responses" ) )
+                .andExpect( MockRestRequestMatchers.method( HttpMethod.POST ) )
+                .andRespond( MockRestResponseCreators.withSuccess().contentType( MediaType.APPLICATION_JSON )
+                        .body( """
+                                        {
+                                          "status": "completed",
+                                          "output": [
+                                            {
+                                              "type": "message",
+                                              "status": "completed",
+                                              "content": [
+                                                {
+                                                  "text": "{\\"answer\\": \\"TEST\\"}"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                """ ) );
+
         mockMvc.perform( MockMvcRequestBuilders
                         .post( "/api/todo" )
                         .contentType( MediaType.APPLICATION_JSON )
@@ -175,11 +194,12 @@ class TodoControllerTest {
                 )
                 .andExpect( MockMvcResultMatchers.status().isCreated() )
                 .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
-                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.id" ).isNotEmpty() )
-                .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( newTodo.description() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( "TEST" ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( newTodo.status().toString() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.currentVersion" ).value( 1L ) );
+
+        mockRestServiceServer.verify();
     }
 
     @ParameterizedTest
@@ -240,7 +260,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         TodoDTO updatedTodo = TodoDTO.builder()
                 .description( "updated" )
@@ -274,7 +294,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         String jsonContent = new ObjectMapper().writeValueAsString( todo );
 
@@ -301,7 +321,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         TodoDTO todoToUpdate = TodoDTO.builder()
                 .description( "updated" )
@@ -346,7 +366,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status( HttpStatus.NOT_FOUND )
@@ -376,7 +396,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo );
+        Todo todo = todoService.createTodo( newTodo, true );
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status( HttpStatus.NOT_FOUND )

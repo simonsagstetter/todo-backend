@@ -47,7 +47,7 @@ public class TodoController {
     @ResponseStatus(HttpStatus.CREATED)
     public Todo create( @Valid @RequestBody TodoDTO todoDTO )
             throws TodoNotFoundException, TodoHistoryNotFoundException {
-        return this.todoService.createTodo( todoDTO );
+        return this.todoService.createTodo( todoDTO, false );
     }
 
     @PutMapping("/{id}")
