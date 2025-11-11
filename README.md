@@ -108,7 +108,7 @@ POST /api/todo
 }
 ```
 
-**Response**
+**Success Response**
 
 - **Status Code:** `201 Created`
 - **Content-Type:** `application/json`
@@ -123,6 +123,48 @@ POST /api/todo
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
   "currentVersion": 0
+}
+```
+
+</details>
+
+**Validation Error Response**
+
+- **Status Code:** `400 Bad Request`
+- **Content-Type:** `application/json`
+- **Body:** `ValidationErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string",
+  "fields": [
+    {
+      "field": "string",
+      "message": "string"
+    }
+  ]
+}
+```
+
+</details>
+
+**Error Response**
+
+- **Status Code:** `404 Not Found`
+- **Content-Type:** `application/json`
+- **Body:** `ErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string"
 }
 ```
 
@@ -149,7 +191,7 @@ GET /api/todo/{id}
 | Content-Type | string | Yes | `application/json` |
 | Accept | string | Yes | `application/json` |
 
-**Response**
+**Success Response**
 
 - **Status Code:** `200 OK`
 - **Content-Type:** `application/json`
@@ -164,6 +206,24 @@ GET /api/todo/{id}
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
   "currentVersion": 0
+}
+```
+
+</details>
+
+**Error Response**
+
+- **Status Code:** `404 Not Found`
+- **Content-Type:** `application/json`
+- **Body:** `ErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string"
 }
 ```
 
@@ -199,7 +259,7 @@ PUT /api/todo/{id}
 }
 ```
 
-**Response**
+**Success Response**
 
 - **Status Code:** `200 OK`
 - **Content-Type:** `application/json`
@@ -214,6 +274,48 @@ PUT /api/todo/{id}
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
   "currentVersion": 0
+}
+```
+
+</details>
+
+**Validation Error Response**
+
+- **Status Code:** `400 Bad Request`
+- **Content-Type:** `application/json`
+- **Body:** `ValidationErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string",
+  "fields": [
+    {
+      "field": "string",
+      "message": "string"
+    }
+  ]
+}
+```
+
+</details>
+
+**Error Response**
+
+- **Status Code:** `404 Not Found`
+- **Content-Type:** `application/json`
+- **Body:** `ErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string"
 }
 ```
 
@@ -240,9 +342,43 @@ DELETE /api/todo/{id}
 | Content-Type | string | Yes | `application/json` |
 | Accept | string | Yes | `application/json` |
 
-**Response**
+**Success Response**
 
-- **Status Code:** `204 No Content`
+- **Status Code:** `200 OK`
+- **Content-Type:** `application/json`
+- **Body:** `Todo` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "id": "string",
+  "description": "string",
+  "status": "OPEN | IN_PROGRESS | DONE",
+  "currentVersion": 0
+}
+```
+
+</details>
+
+**Error Response**
+
+- **Status Code:** `404 Not Found`
+- **Content-Type:** `application/json`
+- **Body:** `ErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string"
+}
+```
+
+</details>
 
 ---
 
@@ -265,7 +401,7 @@ POST /api/todo/{id}/undo
 | Content-Type | string | Yes | `application/json` |
 | Accept | string | Yes | `application/json` |
 
-**Response**
+**Success Response**
 
 - **Status Code:** `200 OK`
 - **Content-Type:** `application/json`
@@ -280,6 +416,24 @@ POST /api/todo/{id}/undo
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
   "currentVersion": 0
+}
+```
+
+</details>
+
+**Error Response**
+
+- **Status Code:** `404 Not Found`
+- **Content-Type:** `application/json`
+- **Body:** `ErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string"
 }
 ```
 
@@ -306,7 +460,7 @@ POST /api/todo/{id}/redo
 | Content-Type | string | Yes | `application/json` |
 | Accept | string | Yes | `application/json` |
 
-**Response**
+**Success Response**
 
 - **Status Code:** `200 OK`
 - **Content-Type:** `application/json`
@@ -321,6 +475,24 @@ POST /api/todo/{id}/redo
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
   "currentVersion": 0
+}
+```
+
+</details>
+
+**Error Response**
+
+- **Status Code:** `404 Not Found`
+- **Content-Type:** `application/json`
+- **Body:** `ErrorResponse` object
+
+<details>
+<summary>📄 Response Schema</summary>
+
+```json
+{
+  "status": "string",
+  "message": "string"
 }
 ```
 
@@ -374,21 +546,76 @@ Possible values for todo status:
 - `IN_PROGRESS` - Todo is being worked on
 - `DONE` - Todo is completed
 
+### ErrorResponse
+
+ErrorResponse object for 404 and 405 errors.
+
+```json
+{
+  "status": "string",
+  "message": "string"
+}
+```
+
+| Field   | Type   | Description                          |
+|---------|--------|--------------------------------------|
+| status  | string | HttpStatus                           |
+| message | string | Detailed information about the error |
+
+### ValidationErrorResponse
+
+ValidationErrorResponse object for 400.
+
+```json
+{
+  "status": "string",
+  "message": "string",
+  "fieldErrors": [
+    {
+      "field": "string",
+      "message": "string"
+    }
+  ]
+}
+```
+
+| Field       | Type         | Description                |
+|-------------|--------------|----------------------------|
+| status      | string       | HttpStatus                 |
+| message     | string       | General error message      |
+| fieldErrors | FieldError[] | List of FieldError objects |
+
+### FieldError
+
+FieldError object for ValidationErrorResponse.
+
+```json
+{
+  "field": "string",
+  "message": "string"
+}
+```
+
+| Field   | Type   | Description                          |
+|---------|--------|--------------------------------------|
+| field   | string | Name of field with error             |
+| message | string | Detailed information about the error |
+
 ---
 
 ## 🔧 Quick Reference
 
 ### All Endpoints Overview
 
-| Method | Endpoint              | Description     | Status Code |
-|--------|-----------------------|-----------------|-------------|
-| GET    | `/api/todo`           | Get all todos   | 200         |
-| POST   | `/api/todo`           | Create new todo | 201         |
-| GET    | `/api/todo/{id}`      | Get todo by ID  | 200         |
-| PUT    | `/api/todo/{id}`      | Update todo     | 200         |
-| DELETE | `/api/todo/{id}`      | Delete todo     | 204         |
-| POST   | `/api/todo/{id}/undo` | Undo changes    | 200         |
-| POST   | `/api/todo/{id}/redo` | Redo changes    | 200         |
+| Method | Endpoint              | Description     | Status Code   |
+|--------|-----------------------|-----------------|---------------|
+| GET    | `/api/todo`           | Get all todos   | 200           |
+| POST   | `/api/todo`           | Create new todo | 201, 400, 404 |
+| GET    | `/api/todo/{id}`      | Get todo by ID  | 200, 404      |
+| PUT    | `/api/todo/{id}`      | Update todo     | 200, 400, 404 |
+| DELETE | `/api/todo/{id}`      | Delete todo     | 204, 404      |
+| POST   | `/api/todo/{id}/undo` | Undo changes    | 200, 404      |
+| POST   | `/api/todo/{id}/redo` | Redo changes    | 200, 404      |
 
 ---
 
