@@ -3,19 +3,25 @@ package com.spring.todobackend.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.dtos.TodoMapper;
+import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
+import com.spring.todobackend.models.ErrorResponse;
 import com.spring.todobackend.models.Todo;
 import com.spring.todobackend.models.TodoStatus;
 import com.spring.todobackend.services.TodoService;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -34,6 +40,57 @@ class TodoControllerTest {
     private TodoMapper todoMapper;
 
     private static final String fixedTodoId = "TODO-TEST-ID";
+
+    @Test
+    void global_ShouldReturn404_WhenCalledOnNotExistingResource() throws Exception {
+        String path = "api/todos";
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status( HttpStatus.NOT_FOUND )
+                .message( "No static resource " + path + "." )
+                .build();
+
+        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .get( "/" + path )
+                )
+                .andExpect( MockMvcResultMatchers.status().isNotFound() )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( errorResponse.getStatus().name() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.message" ).value( errorResponse.getMessage() ) );
+
+
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    void global_ShouldReturn405_WhenCalledWithNotAllowedMethod( String description, String status ) throws Exception {
+        //GIVEN
+        TodoStatus todoStatus = TodoStatus.valueOf( status );
+        TodoDTO newTodo = TodoDTO.builder()
+                .description( description )
+                .status( todoStatus )
+                .build();
+
+        Todo todo = todoService.createTodo( newTodo );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status( HttpStatus.METHOD_NOT_ALLOWED )
+                .message( "Request method 'GET' is not supported" )
+                .build();
+
+        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .get( "/api/todo/" + todo.id() + "/undo" )
+                )
+                .andExpect( MockMvcResultMatchers.status().isMethodNotAllowed() )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( errorResponse.getStatus().name() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.message" ).value( errorResponse.getMessage() ) );
+
+
+    }
 
     @ParameterizedTest
     @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
@@ -123,6 +180,54 @@ class TodoControllerTest {
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( newTodo.description() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( newTodo.status().toString() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.currentVersion" ).value( 1L ) );
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    void create_ShouldReturnValidationErrorResponse_WhenCalledWithInvalidBlankTodoDTO( String description, String status ) throws Exception {
+        //GIVEN
+        TodoStatus todoStatus = TodoStatus.valueOf( status );
+        TodoDTO newTodo = TodoDTO.builder()
+                .description( "       " )
+                .status( todoStatus )
+                .build();
+
+        String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .post( "/api/todo" )
+                        .contentType( MediaType.APPLICATION_JSON )
+                        .accept( MediaType.APPLICATION_JSON )
+                        .content( jsonContent )
+                )
+                .andExpect( MockMvcResultMatchers.status().isBadRequest() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( HttpStatus.BAD_REQUEST.name() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.fieldErrors" ).isArray() );
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    void create_ShouldReturnValidationErrorResponse_WhenCalledWithInvalidLengthTodoDTO( String description, String status ) throws Exception {
+        //GIVEN
+        TodoStatus todoStatus = TodoStatus.valueOf( status );
+        TodoDTO newTodo = TodoDTO.builder()
+                .description( "1" )
+                .status( todoStatus )
+                .build();
+
+        String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .post( "/api/todo" )
+                        .contentType( MediaType.APPLICATION_JSON )
+                        .accept( MediaType.APPLICATION_JSON )
+                        .content( jsonContent )
+                )
+                .andExpect( MockMvcResultMatchers.status().isBadRequest() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( HttpStatus.BAD_REQUEST.name() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.fieldErrors" ).isArray() );
     }
 
     @ParameterizedTest
@@ -229,6 +334,66 @@ class TodoControllerTest {
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( updatedTodo.description() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( updatedTodo.status().toString() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.currentVersion" ).value( updatedTodo.currentVersion() ) );
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    void undo_ShouldReturn404_WhenCalledOnTodoWithoutHistory( String description, String status ) throws Exception {
+        //GIVEN
+        TodoStatus todoStatus = TodoStatus.valueOf( status );
+        TodoDTO newTodo = TodoDTO.builder()
+                .description( description )
+                .status( todoStatus )
+                .build();
+
+        Todo todo = todoService.createTodo( newTodo );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status( HttpStatus.NOT_FOUND )
+                .message( new TodoHistoryNotFoundException( todo.id() ).getMessage() )
+                .build();
+
+        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .post( "/api/todo/" + todo.id() + "/undo" )
+                )
+                .andExpect( MockMvcResultMatchers.status().isNotFound() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( errorResponse.getStatus().name() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.message" ).value( errorResponse.getMessage() ) );
+
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(files = "src/test/resources/todos.csv", delimiter = ',', numLinesToSkip = 1)
+    void redo_ShouldReturn404_WhenCalledOnTodoWithoutHistory( String description, String status ) throws Exception {
+        //GIVEN
+        TodoStatus todoStatus = TodoStatus.valueOf( status );
+        TodoDTO newTodo = TodoDTO.builder()
+                .description( description )
+                .status( todoStatus )
+                .build();
+
+        Todo todo = todoService.createTodo( newTodo );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status( HttpStatus.NOT_FOUND )
+                .message( new TodoHistoryNotFoundException( todo.id() ).getMessage() )
+                .build();
+
+        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+
+        mockMvc.perform( MockMvcRequestBuilders
+                        .post( "/api/todo/" + todo.id() + "/redo" )
+                )
+                .andExpect( MockMvcResultMatchers.status().isNotFound() )
+                .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
+                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( errorResponse.getStatus().name() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$.message" ).value( errorResponse.getMessage() ) );
+
     }
 
 }
