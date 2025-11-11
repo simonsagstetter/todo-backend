@@ -8,5 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @With
 @Builder
 @Document("todos")
-public record Todo( @Id String id, String description, TodoStatus status, long currentVersion ) {
+public record Todo( @Id String id, String description, TodoStatus status,
+                    long currentVersion ) {
 }
