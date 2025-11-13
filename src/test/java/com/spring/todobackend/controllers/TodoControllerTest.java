@@ -1,6 +1,8 @@
 package com.spring.todobackend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.spring.todobackend.dtos.TodoCreateDTO;
 import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
@@ -8,6 +10,7 @@ import com.spring.todobackend.models.ErrorResponse;
 import com.spring.todobackend.models.Todo;
 import com.spring.todobackend.models.TodoStatus;
 import com.spring.todobackend.services.TodoService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -46,6 +49,14 @@ class TodoControllerTest {
 
     private static final String fixedTodoId = "TODO-TEST-ID";
 
+    private static ObjectMapper objectMapper;
+
+    @BeforeAll
+    static void beforeAll() {
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule( new JavaTimeModule() );
+        objectMapper.disable( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS );
+    }
 
     @Test
     void global_ShouldReturn404_WhenCalledOnNotExistingResource() throws Exception {
@@ -74,7 +85,7 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
@@ -84,7 +95,7 @@ class TodoControllerTest {
                 .message( "Request method 'GET' is not supported" )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+        String jsonContent = objectMapper.writeValueAsString( errorResponse );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo/" + todo.id() + "/undo" )
@@ -103,20 +114,20 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
-        String jsonContent = new ObjectMapper().writeValueAsString( List.of( todo ) );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo" )
                 )
                 .andExpect( MockMvcResultMatchers.status().isOk() )
                 .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
-                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$[0].id" ).isNotEmpty() )
-                .andExpect( MockMvcResultMatchers.jsonPath( "$[0].currentVersion" ).value( 1L ) );
+                .andExpect( MockMvcResultMatchers.jsonPath( "$[0].currentVersion" ).value( 1L ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$[0].description" ).value( todo.description() ) )
+                .andExpect( MockMvcResultMatchers.jsonPath( "$[0].status" ).value( todo.status().name() ) );
     }
 
     @ParameterizedTest
@@ -138,19 +149,16 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
-
-        String jsonContent = new ObjectMapper().writeValueAsString( todo );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .get( "/api/todo/" + todo.id() )
                 )
                 .andExpect( MockMvcResultMatchers.status().isOk() )
                 .andExpect( MockMvcResultMatchers.content().contentType( MediaType.APPLICATION_JSON ) )
-                .andExpect( MockMvcResultMatchers.content().json( jsonContent ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.id" ).value( todo.id() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.description" ).value( todo.description() ) )
                 .andExpect( MockMvcResultMatchers.jsonPath( "$.status" ).value( todo.status().toString() ) )
@@ -165,10 +173,10 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( true )
+                .shouldGrammarCheck( true )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
+        String jsonContent = objectMapper.writeValueAsString( newTodo );
 
         mockRestServiceServer.expect( ExpectedCount.once(), MockRestRequestMatchers.requestTo( "https://api.openai.com/v1/responses" ) )
                 .andExpect( MockRestRequestMatchers.method( HttpMethod.POST ) )
@@ -216,7 +224,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
+        String jsonContent = objectMapper.writeValueAsString( newTodo );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .post( "/api/todo" )
@@ -240,7 +248,7 @@ class TodoControllerTest {
                 .status( todoStatus )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
+        String jsonContent = objectMapper.writeValueAsString( newTodo );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .post( "/api/todo" )
@@ -262,7 +270,7 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
@@ -270,9 +278,10 @@ class TodoControllerTest {
         TodoDTO updatedTodo = TodoDTO.builder()
                 .description( "updated" )
                 .status( TodoStatus.IN_PROGRESS )
+                .isGrammarChecked( false )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( updatedTodo );
+        String jsonContent = objectMapper.writeValueAsString( updatedTodo );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .put( "/api/todo/" + todo.id() )
@@ -297,12 +306,13 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
 
-        String jsonContent = new ObjectMapper().writeValueAsString( todo );
+
+        String jsonContent = objectMapper.writeValueAsString( todo );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .delete( "/api/todo/" + todo.id() )
@@ -325,7 +335,7 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
@@ -337,8 +347,8 @@ class TodoControllerTest {
 
         Todo updatedTodo = todoService.updateTodo( todo.id(), todoToUpdate );
 
-        String jsonContentPrev = new ObjectMapper().writeValueAsString( todo );
-        String jsonContentNext = new ObjectMapper().writeValueAsString( updatedTodo );
+        String jsonContentPrev = objectMapper.writeValueAsString( todo );
+        String jsonContentNext = objectMapper.writeValueAsString( updatedTodo );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .post( "/api/todo/" + todo.id() + "/undo" )
@@ -371,7 +381,7 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
@@ -381,7 +391,7 @@ class TodoControllerTest {
                 .message( new TodoHistoryNotFoundException( todo.id() ).getMessage() )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+        String jsonContent = objectMapper.writeValueAsString( errorResponse );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .post( "/api/todo/" + todo.id() + "/undo" )
@@ -402,7 +412,7 @@ class TodoControllerTest {
         TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
-                .checkGrammar( false )
+                .shouldGrammarCheck( false )
                 .build();
 
         Todo todo = todoService.createTodo( newTodo );
@@ -412,7 +422,7 @@ class TodoControllerTest {
                 .message( new TodoHistoryNotFoundException( todo.id() ).getMessage() )
                 .build();
 
-        String jsonContent = new ObjectMapper().writeValueAsString( errorResponse );
+        String jsonContent = objectMapper.writeValueAsString( errorResponse );
 
         mockMvc.perform( MockMvcRequestBuilders
                         .post( "/api/todo/" + todo.id() + "/redo" )

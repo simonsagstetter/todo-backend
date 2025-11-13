@@ -10,7 +10,10 @@ import lombok.With;
 @Builder
 @With
 public record TodoDTO(
-        @NotBlank(message = "Description cannot be blank") @Size(min = 3, max = 1024, message = "Description must contain at least 3 and at max 1024 characters") String description,
-        TodoStatus status
+        @NotBlank(message = "Description cannot be blank")
+        @Size(min = 2, max = 1024, message = "Description must contain at least 3 and at max 1024 characters")
+        String description,
+        TodoStatus status,
+        Boolean isGrammarChecked
 ) {
 }

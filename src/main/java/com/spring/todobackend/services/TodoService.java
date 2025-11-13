@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -34,6 +35,9 @@ public class TodoService {
     @Autowired
     private ChatGPTService chatGPTService;
 
+    @Autowired
+    private AuditService auditService;
+
     private enum HistoryKind {
         PREVIOUS,
         NEXT
@@ -53,7 +57,7 @@ public class TodoService {
     // CREATE SERVICES
     @Transactional
     public Todo createTodo( TodoCreateDTO todo ) throws TodoHistoryNotFoundException, TodoNotFoundException {
-        if ( todo.checkGrammar() ) {
+        if ( todo.shouldGrammarCheck() ) {
             GrammarResponse grammarResponse = this.chatGPTService.checkGrammar( todo.description() ).orElse( null );
 
             if ( grammarResponse != null ) {
@@ -61,11 +65,12 @@ public class TodoService {
             }
 
         }
-        
+        Instant created = auditService.getCurrentTimestamp();
+
         String todoId = this.idService.generateIdFor( Todo.class.getSimpleName() );
         String todoHistoryId = this.idService.generateIdFor( TodoHistory.class.getSimpleName() );
 
-        Todo newTodo = this.todoMapper.toTodo( todoId, 1, todo );
+        Todo newTodo = this.todoMapper.toTodo( todoId, 1, created, todo );
         TodoHistory newTodoHistory = this.todoMapper.toTodoHistory( todoHistoryId, newTodo );
 
         TodoHistory insertedTodoHistory = this.todoHistoryRepository.insert( newTodoHistory );
@@ -81,8 +86,14 @@ public class TodoService {
     public Todo updateTodo( String id, TodoDTO todo ) throws TodoNotFoundException, TodoHistoryNotFoundException {
         Todo oldTodo = this.getTodo( id );
         String todoHistoryId = this.idService.generateIdFor( TodoHistory.class.getSimpleName() );
+        Instant updated = auditService.getCurrentTimestamp();
 
-        Todo newTodo = this.todoMapper.toTodo( oldTodo.id(), oldTodo.currentVersion() + 1, todo );
+        Todo newTodo = this.todoMapper.toTodo(
+                oldTodo.id(), oldTodo.currentVersion() + 1,
+                oldTodo.created(),
+                updated,
+                todo.withIsGrammarChecked( false )
+        );
         TodoHistory todoHistory = this.todoMapper.toTodoHistory( todoHistoryId, newTodo );
 
         TodoHistory insertedTodoHistory = this.todoHistoryRepository.insert( todoHistory );

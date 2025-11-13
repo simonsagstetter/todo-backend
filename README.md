@@ -77,7 +77,10 @@ GET /api/todo
     "id": "string",
     "description": "string",
     "status": "OPEN | IN_PROGRESS | DONE",
-    "currentVersion": 0
+    "isGrammarChecked": "true | false",
+    "currentVersion": 0,
+    "created": "string",
+    "lastModified": "string"
   }
 ]
 ```
@@ -123,7 +126,10 @@ POST /api/todo
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -206,7 +212,10 @@ GET /api/todo/{id}
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -274,7 +283,10 @@ PUT /api/todo/{id}
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -357,7 +369,10 @@ DELETE /api/todo/{id}
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -416,7 +431,10 @@ POST /api/todo/{id}/undo
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -475,7 +493,10 @@ POST /api/todo/{id}/redo
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -512,7 +533,10 @@ Complete todo object with ID and versioning.
   "id": "string",
   "description": "string",
   "status": "OPEN | IN_PROGRESS | DONE",
-  "currentVersion": 0
+  "isGrammarChecked": "true | false",
+  "currentVersion": 0,
+  "created": "string",
+  "lastModified": "string"
 }
 ```
 
@@ -530,7 +554,8 @@ Todo object for creation and updates (without ID).
 ```json
 {
   "description": "string",
-  "status": "OPEN | IN_PROGRESS | DONE"
+  "status": "OPEN | IN_PROGRESS | DONE",
+  "shouldGrammarCheck": "true | false"
 }
 ```
 
@@ -617,234 +642,6 @@ FieldError object for ValidationErrorResponse.
 | DELETE | `/api/todo/{id}`      | Delete todo     | 204, 404      |
 | POST   | `/api/todo/{id}/undo` | Undo changes    | 200, 404      |
 | POST   | `/api/todo/{id}/redo` | Redo changes    | 200, 404      |
-
----
-
-## 💡 TypeScript Examples
-
-### Type Definitions
-
-```typescript
-// Types
-type TodoStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
-
-interface TodoDTO {
-    description: string;
-    status: TodoStatus;
-}
-
-interface Todo extends TodoDTO {
-    id: string;
-    currentVersion: number;
-}
-
-// API Configuration
-const API_BASE_URL = 'http://localhost:8080';
-const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-};
-```
-
-### 1. Create Todo
-
-```typescript
-async function createTodo(todo: TodoDTO): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/api/todo`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(todo)
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Usage
-const newTodo = await createTodo({
-    description: 'Document project',
-    status: 'OPEN'
-});
-console.log('Created:', newTodo);
-```
-
-### 2. Get All Todos
-
-```typescript
-async function getAllTodos(): Promise<Todo[]> {
-    const response = await fetch(`${API_BASE_URL}/api/todo`, {
-        method: 'GET',
-        headers
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Usage
-const todos = await getAllTodos();
-console.log('Todos:', todos);
-```
-
-### 3. Get Todo by ID
-
-```typescript
-async function getTodoById(id: string): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/api/todo/${id}`, {
-        method: 'GET',
-        headers
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Usage
-const todo = await getTodoById('123');
-console.log('Todo:', todo);
-```
-
-### 4. Update Todo
-
-```typescript
-async function updateTodo(id: string, todo: TodoDTO): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/api/todo/${id}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(todo)
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Usage
-const updatedTodo = await updateTodo('123', {
-    description: 'Document project',
-    status: 'DONE'
-});
-console.log('Updated:', updatedTodo);
-```
-
-### 5. Delete Todo
-
-```typescript
-async function deleteTodo(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/todo/${id}`, {
-        method: 'DELETE',
-        headers
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // 204 No Content - no body
-}
-
-// Usage
-await deleteTodo('123');
-console.log('Todo deleted');
-```
-
-### 6. Undo Changes
-
-```typescript
-async function undoTodo(id: string): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/api/todo/${id}/undo`, {
-        method: 'POST',
-        headers
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Usage
-const undoneVersion = await undoTodo('123');
-console.log('Undo completed:', undoneVersion);
-```
-
-### 7. Redo Changes
-
-```typescript
-async function redoTodo(id: string): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/api/todo/${id}/redo`, {
-        method: 'POST',
-        headers
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Usage
-const redoneVersion = await redoTodo('123');
-console.log('Redo completed:', redoneVersion);
-```
-
-### 🎯 Complete Example
-
-```typescript
-// Complete workflow
-async function todoWorkflow() {
-    try {
-        // 1. Create new todo
-        const newTodo = await createTodo({
-            description: 'Test API',
-            status: 'OPEN'
-        });
-        console.log('✅ Todo created:', newTodo.id);
-
-        // 2. Update todo
-        const updated = await updateTodo(newTodo.id, {
-            description: 'Test API',
-            status: 'IN_PROGRESS'
-        });
-        console.log('✅ Status changed to IN_PROGRESS');
-
-        // 3. Undo change
-        const undone = await undoTodo(newTodo.id);
-        console.log('↩️ Undo: back to', undone.status);
-
-        // 4. Redo change
-        const redone = await redoTodo(newTodo.id);
-        console.log('↪️ Redo: back to', redone.status);
-
-        // 5. Get all todos
-        const allTodos = await getAllTodos();
-        console.log('📋 Number of todos:', allTodos.length);
-
-        // 6. Delete todo
-        await deleteTodo(newTodo.id);
-        console.log('🗑️ Todo deleted');
-
-    } catch (error) {
-        console.error('❌ Error:', error);
-    }
-}
-
-// Run workflow
-todoWorkflow();
-```
 
 ---
 
