@@ -1,5 +1,6 @@
 package com.spring.todobackend.services;
 
+import com.spring.todobackend.dtos.TodoCreateDTO;
 import com.spring.todobackend.dtos.TodoMapper;
 import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
@@ -51,8 +52,8 @@ public class TodoService {
 
     // CREATE SERVICES
     @Transactional
-    public Todo createTodo( TodoDTO todo, boolean skipGrammarCheck ) throws TodoHistoryNotFoundException, TodoNotFoundException {
-        if ( !skipGrammarCheck ) {
+    public Todo createTodo( TodoCreateDTO todo ) throws TodoHistoryNotFoundException, TodoNotFoundException {
+        if ( todo.checkGrammar() ) {
             GrammarResponse grammarResponse = this.chatGPTService.checkGrammar( todo.description() ).orElse( null );
 
             if ( grammarResponse != null ) {
@@ -60,11 +61,7 @@ public class TodoService {
             }
 
         }
-
-        return this.createTodo( todo );
-    }
-
-    public Todo createTodo( TodoDTO todo ) throws TodoHistoryNotFoundException, TodoNotFoundException {
+        
         String todoId = this.idService.generateIdFor( Todo.class.getSimpleName() );
         String todoHistoryId = this.idService.generateIdFor( TodoHistory.class.getSimpleName() );
 

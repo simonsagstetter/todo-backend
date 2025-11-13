@@ -19,6 +19,15 @@ public class TodoMapper {
                 .build();
     }
 
+    public Todo toTodo( String id, long version, TodoCreateDTO todoDTO ) {
+        return Todo.builder()
+                .id( id )
+                .description( todoDTO.description() )
+                .status( todoDTO.status() )
+                .currentVersion( version )
+                .build();
+    }
+
     public Todo toTodo( String id, TodoHistory todoHistory ) {
         return Todo.builder()
                 .id( id )

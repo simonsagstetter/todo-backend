@@ -1,5 +1,6 @@
 package com.spring.todobackend.controllers;
 
+import com.spring.todobackend.dtos.TodoCreateDTO;
 import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
 import com.spring.todobackend.exceptions.TodoNotFoundException;
@@ -26,6 +27,7 @@ import java.util.List;
                 "Accept=" + MediaType.APPLICATION_JSON_VALUE
         }
 )
+@CrossOrigin("http://localhost:3000")
 public class TodoController {
 
     @Autowired
@@ -40,14 +42,15 @@ public class TodoController {
     @GetMapping(path = "/{id}", consumes = MediaType.ALL_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Todo get( @PathVariable String id ) throws TodoNotFoundException {
+//        throw new TodoNotFoundException( id );
         return this.todoService.getTodo( id );
     }
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public Todo create( @Valid @RequestBody TodoDTO todoDTO )
+    public Todo create( @Valid @RequestBody TodoCreateDTO todoDTO )
             throws TodoNotFoundException, TodoHistoryNotFoundException {
-        return this.todoService.createTodo( todoDTO, false );
+        return this.todoService.createTodo( todoDTO );
     }
 
     @PutMapping("/{id}")

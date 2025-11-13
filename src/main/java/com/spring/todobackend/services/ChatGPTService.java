@@ -6,7 +6,6 @@ import com.spring.todobackend.models.GrammarResponse;
 import com.spring.todobackend.models.external.OpenAIModel;
 import com.spring.todobackend.models.external.OpenAIModelRequest;
 import com.spring.todobackend.models.external.OpenAIModelResponse;
-import com.spring.todobackend.models.external.OpenAIStatus;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;

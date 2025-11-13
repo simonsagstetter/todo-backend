@@ -1,6 +1,7 @@
 package com.spring.todobackend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spring.todobackend.dtos.TodoCreateDTO;
 import com.spring.todobackend.dtos.TodoDTO;
 import com.spring.todobackend.exceptions.TodoHistoryNotFoundException;
 import com.spring.todobackend.models.ErrorResponse;
@@ -70,12 +71,13 @@ class TodoControllerTest {
     void global_ShouldReturn405_WhenCalledWithNotAllowedMethod( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status( HttpStatus.METHOD_NOT_ALLOWED )
@@ -98,13 +100,13 @@ class TodoControllerTest {
     void getAll_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
-
+        Todo todo = todoService.createTodo( newTodo );
         String jsonContent = new ObjectMapper().writeValueAsString( List.of( todo ) );
 
         mockMvc.perform( MockMvcRequestBuilders
@@ -133,12 +135,13 @@ class TodoControllerTest {
     void get_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         String jsonContent = new ObjectMapper().writeValueAsString( todo );
 
@@ -159,9 +162,10 @@ class TodoControllerTest {
     void create_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( true )
                 .build();
 
         String jsonContent = new ObjectMapper().writeValueAsString( newTodo );
@@ -255,12 +259,13 @@ class TodoControllerTest {
     void update_ShouldReturnTodo_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         TodoDTO updatedTodo = TodoDTO.builder()
                 .description( "updated" )
@@ -289,12 +294,13 @@ class TodoControllerTest {
     void delete_ShouldNotThrow_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         String jsonContent = new ObjectMapper().writeValueAsString( todo );
 
@@ -316,12 +322,13 @@ class TodoControllerTest {
     void undo_redo_ShouldReturnTodoFromHistory_WhenCalled( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         TodoDTO todoToUpdate = TodoDTO.builder()
                 .description( "updated" )
@@ -361,12 +368,13 @@ class TodoControllerTest {
     void undo_ShouldReturn404_WhenCalledOnTodoWithoutHistory( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status( HttpStatus.NOT_FOUND )
@@ -391,12 +399,13 @@ class TodoControllerTest {
     void redo_ShouldReturn404_WhenCalledOnTodoWithoutHistory( String description, String status ) throws Exception {
         //GIVEN
         TodoStatus todoStatus = TodoStatus.valueOf( status );
-        TodoDTO newTodo = TodoDTO.builder()
+        TodoCreateDTO newTodo = TodoCreateDTO.builder()
                 .description( description )
                 .status( todoStatus )
+                .checkGrammar( false )
                 .build();
 
-        Todo todo = todoService.createTodo( newTodo, true );
+        Todo todo = todoService.createTodo( newTodo );
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status( HttpStatus.NOT_FOUND )
